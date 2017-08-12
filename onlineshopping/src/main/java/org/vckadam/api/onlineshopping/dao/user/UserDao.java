@@ -1,5 +1,9 @@
 package org.vckadam.api.onlineshopping.dao.user;
 
-public interface UserDao {
+import java.util.List;
 
+import org.vckadam.api.onlineshopping.model.user.User;
+
+public interface UserDao {
+	List<User> getAllUser();
 }

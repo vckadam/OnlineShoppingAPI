@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
+import org.vckadam.api.onlineshopping.model.category.Category;
 import org.vckadam.api.onlineshopping.model.product.Product;
 import org.vckadam.api.onlineshopping.model.product.ProductPurchasedByUser;
+import org.vckadam.api.onlineshopping.model.user.TopUserCategories;
 import org.vckadam.api.onlineshopping.model.user.User;
 import org.vckadam.api.onlineshopping.model.user.UserHistory;
 
@@ -255,6 +257,78 @@ public class ProductServiceImplTest extends TestCase {
 	
 	@Test
 	public void testGetTopUserCategories() {
+		Long[][] prodForU1 = {{1L,1L},{2L,1L},{3L,2L}};
+		Long[][] prodForU2 = {{1L,2L},{2L,2L},{3L,1L}};
+		Object[][] userProdIds = {{1L,prodForU1},{2L,prodForU2}};
+		List<ProductPurchasedByUser> prodsByUser = prepProdsListForGetTopUserCategories(userProdIds);
+		Long[] catIds = {1L,2L};
+		List<Category> catList = prepCatListForGetTopUserCategories(catIds);
+		List<TopUserCategories> userCatIdAct = this.productServiceImpl.getTopUserCategories(prodsByUser, catList);
+		Map<Long,List<Long>> useCatIdsActMap = prepActualMapForGetTopUserCategories(userCatIdAct);
 		
+		Object[][] expUserCatIds = {{1L, Arrays.asList(1L,2L)},{2L,Arrays.asList(2L,1L)}};
+		Map<Long,List<Long>> useCatIdsExpMap = prepExpectedMapForGetTopUserCategories(expUserCatIds);
+		
+		assertEquals(expUserCatIds.length, userCatIdAct.size());
+		assertEquals(useCatIdsExpMap, useCatIdsActMap);
+	}
+	
+	private List<ProductPurchasedByUser> prepProdsListForGetTopUserCategories(Object[][] userProdIds){
+		List<ProductPurchasedByUser> prodsByUser = new ArrayList<ProductPurchasedByUser>();
+		for(Object[] ele : userProdIds) {
+			if(ele != null) {
+				Long userId = (Long)ele[0];
+				User user = null;
+				if(userId != null)  {
+					user = new User(userId,null,null,null,null);
+				}
+				Long[][] prodCatIds = (Long[][])ele[1];
+				List<Product> prods = null;
+				if(prodCatIds != null) {
+					prods = new ArrayList<Product>();
+					for(Long[] prodCatId : prodCatIds) {
+						prods.add(new Product(prodCatId[0], null, prodCatId[1], null));
+					}
+				}
+				prodsByUser.add(new ProductPurchasedByUser(user,prods));
+			} 
+			else 
+				prodsByUser.add(null);
+		}
+		return prodsByUser;
+	}
+	
+	private List<Category> prepCatListForGetTopUserCategories(Long[] catIds) {
+		List<Category> cats = new ArrayList<Category>();
+		for(Long catId : catIds) {
+			if(catId != null)
+				cats.add(new Category(catId, null, null));
+			else 
+				cats.add(null);
+		}
+		return cats;
+	}
+	
+	private Map<Long,List<Long>> prepActualMapForGetTopUserCategories(List<TopUserCategories> userCatIdAct) {
+		Map<Long,List<Long>> userCatIdMap = new HashMap<Long,List<Long>>();
+		for(TopUserCategories ele : userCatIdAct) {
+			Long userId = ele.getUser().getUserId();
+			List<Long> catIds = new ArrayList<Long>();
+			List<Category> currCats = ele.getCategories();
+			for(Category cat : currCats) {
+				catIds.add(cat.getCategoryId());
+			}
+			userCatIdMap.put(userId, catIds);
+		}
+		return userCatIdMap;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Map<Long,List<Long>> prepExpectedMapForGetTopUserCategories(Object[][] expUserCatIds) {
+		Map<Long,List<Long>> userCatIdMap = new HashMap<Long,List<Long>>();
+		for(Object[] ele : expUserCatIds) {
+			userCatIdMap.put((Long)ele[0],(List<Long>)ele[1]);
+		}
+		return userCatIdMap;
 	}
 }

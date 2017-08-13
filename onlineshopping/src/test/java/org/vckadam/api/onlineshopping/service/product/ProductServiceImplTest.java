@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import org.vckadam.api.onlineshopping.model.category.Category;
+import org.vckadam.api.onlineshopping.model.category.ProductsInCategory;
 import org.vckadam.api.onlineshopping.model.product.Product;
 import org.vckadam.api.onlineshopping.model.product.ProductPurchasedByUser;
 import org.vckadam.api.onlineshopping.model.user.TopUserCategories;
@@ -330,5 +331,154 @@ public class ProductServiceImplTest extends TestCase {
 			userCatIdMap.put((Long)ele[0],(List<Long>)ele[1]);
 		}
 		return userCatIdMap;
+	}
+	
+	/************************************************************************/
+	
+	@Test
+	public void testGetProductsInCategory_BasicScenario() {
+		Long[] catIds = {1L,2L,3L};
+		List<Category> cats = prepCatListForGetTopUserCategories(catIds);
+		Long[][] prodCatId = {{1L,1L},{2L,2L},{3L,3L},{4L,3L},{5L,2L},{6L,1L}};
+		List<Product> prods = prepProdcts(prodCatId);
+		List<ProductsInCategory> prodsInCat = this.productServiceImpl.getProductsInCategory(prods, cats);
+		Map<Long,List<Long>> catToProdIdMapAct = prepActualMap(prodsInCat);
+		
+		Object[][] catToProdIdExp = {{1L,Arrays.asList(1L,6L)},{2L,Arrays.asList(2L,5L)},{3L,Arrays.asList(3L,4L)}};
+		Map<Long,List<Long>> catToProdIdMapExp = prepExpectedMap(catToProdIdExp);
+		
+		assertEquals(catToProdIdExp.length, prodsInCat.size());
+		assertEquals(catToProdIdMapExp, catToProdIdMapAct);
+	}
+	
+	@Test
+	public void testGetProductsInCategory_ExtraCategory() {
+		Long[] catIds = {1L,2L,3L,4L};
+		List<Category> cats = prepCatListForGetTopUserCategories(catIds);
+		Long[][] prodCatId = {{1L,1L},{2L,2L},{3L,3L},{4L,3L},{5L,2L},{6L,1L}};
+		List<Product> prods = prepProdcts(prodCatId);
+		List<ProductsInCategory> prodsInCat = this.productServiceImpl.getProductsInCategory(prods, cats);
+		Map<Long,List<Long>> catToProdIdMapAct = prepActualMap(prodsInCat);
+		
+		Object[][] catToProdIdExp = {{1L,Arrays.asList(1L,6L)},{2L,Arrays.asList(2L,5L)},{3L,Arrays.asList(3L,4L)}};
+		Map<Long,List<Long>> catToProdIdMapExp = prepExpectedMap(catToProdIdExp);
+		
+		assertEquals(catToProdIdExp.length, prodsInCat.size());
+		assertEquals(catToProdIdMapExp, catToProdIdMapAct);
+	}
+	
+	@Test
+	public void testGetProductsInCategory_ExtraProduct() {
+		Long[] catIds = {1L,2L,3L,4L};
+		List<Category> cats = prepCatListForGetTopUserCategories(catIds);
+		Long[][] prodCatId = {{1L,1L},{2L,2L},{3L,3L},{4L,3L},{5L,2L},{6L,1L},{7L,9L}}; //9L invalid category
+		List<Product> prods = prepProdcts(prodCatId);
+		List<ProductsInCategory> prodsInCat = this.productServiceImpl.getProductsInCategory(prods, cats);
+		Map<Long,List<Long>> catToProdIdMapAct = prepActualMap(prodsInCat);
+		
+		Object[][] catToProdIdExp = {{1L,Arrays.asList(1L,6L)},{2L,Arrays.asList(2L,5L)},{3L,Arrays.asList(3L,4L)}};
+		Map<Long,List<Long>> catToProdIdMapExp = prepExpectedMap(catToProdIdExp);
+		
+		assertEquals(catToProdIdExp.length, prodsInCat.size());
+		assertEquals(catToProdIdMapExp, catToProdIdMapAct);
+	}
+	
+	@Test
+	public void testGetProductsInCategory_DuplicateProduct() {
+		Long[] catIds = {1L,2L,3L,4L};
+		List<Category> cats = prepCatListForGetTopUserCategories(catIds);
+		Long[][] prodCatId = {{1L,1L},{2L,2L},{3L,3L},{4L,3L},{5L,2L},{6L,1L},{6L,1L}}; 
+		List<Product> prods = prepProdcts(prodCatId);
+		List<ProductsInCategory> prodsInCat = this.productServiceImpl.getProductsInCategory(prods, cats);
+		Map<Long,List<Long>> catToProdIdMapAct = prepActualMap(prodsInCat);
+		
+		Object[][] catToProdIdExp = {{1L,Arrays.asList(1L,6L)},{2L,Arrays.asList(2L,5L)},{3L,Arrays.asList(3L,4L)}};
+		Map<Long,List<Long>> catToProdIdMapExp = prepExpectedMap(catToProdIdExp);
+		
+		assertEquals(catToProdIdExp.length, prodsInCat.size());
+		assertEquals(catToProdIdMapExp, catToProdIdMapAct);
+	}
+	
+	@Test
+	public void testGetProductsInCategory_DuplicateCategory() {
+		Long[] catIds = {1L,2L,3L,3L};
+		List<Category> cats = prepCatListForGetTopUserCategories(catIds);
+		Long[][] prodCatId = {{1L,1L},{2L,2L},{3L,3L},{4L,3L},{5L,2L},{6L,1L},{6L,1L}}; 
+		List<Product> prods = prepProdcts(prodCatId);
+		List<ProductsInCategory> prodsInCat = this.productServiceImpl.getProductsInCategory(prods, cats);
+		Map<Long,List<Long>> catToProdIdMapAct = prepActualMap(prodsInCat);
+		
+		Object[][] catToProdIdExp = {{1L,Arrays.asList(1L,6L)},{2L,Arrays.asList(2L,5L)},{3L,Arrays.asList(3L,4L)}};
+		Map<Long,List<Long>> catToProdIdMapExp = prepExpectedMap(catToProdIdExp);
+		
+		assertEquals(catToProdIdExp.length, prodsInCat.size());
+		assertEquals(catToProdIdMapExp, catToProdIdMapAct);
+	}
+	
+	@Test
+	public void testGetProductsInCategory_NullCategory() {
+		Long[] catIds = {1L,null,2L,3L,null,3L};
+		List<Category> cats = prepCatListForGetTopUserCategories(catIds);
+		Long[][] prodCatId = {{1L,1L},{2L,2L},{3L,3L},{4L,3L},{5L,2L},{6L,1L},{6L,1L}}; 
+		List<Product> prods = prepProdcts(prodCatId);
+		List<ProductsInCategory> prodsInCat = this.productServiceImpl.getProductsInCategory(prods, cats);
+		Map<Long,List<Long>> catToProdIdMapAct = prepActualMap(prodsInCat);
+		
+		Object[][] catToProdIdExp = {{1L,Arrays.asList(1L,6L)},{2L,Arrays.asList(2L,5L)},{3L,Arrays.asList(3L,4L)}};
+		Map<Long,List<Long>> catToProdIdMapExp = prepExpectedMap(catToProdIdExp);
+		
+		assertEquals(catToProdIdExp.length, prodsInCat.size());
+		assertEquals(catToProdIdMapExp, catToProdIdMapAct);
+	}
+	
+	@Test
+	public void testGetProductsInCategory_NullProduct() {
+		Long[] catIds = {1L,null,2L,3L,null,3L};
+		List<Category> cats = prepCatListForGetTopUserCategories(catIds);
+		Long[][] prodCatId = {{1L,1L},null,{2L,2L},{3L,3L},null,{4L,3L},{5L,2L},{6L,1L},{6L,1L}}; 
+		List<Product> prods = prepProdcts(prodCatId);
+		List<ProductsInCategory> prodsInCat = this.productServiceImpl.getProductsInCategory(prods, cats);
+		Map<Long,List<Long>> catToProdIdMapAct = prepActualMap(prodsInCat);
+		
+		Object[][] catToProdIdExp = {{1L,Arrays.asList(1L,6L)},{2L,Arrays.asList(2L,5L)},{3L,Arrays.asList(3L,4L)}};
+		Map<Long,List<Long>> catToProdIdMapExp = prepExpectedMap(catToProdIdExp);
+		
+		assertEquals(catToProdIdExp.length, prodsInCat.size());
+		assertEquals(catToProdIdMapExp, catToProdIdMapAct);
+	}
+	
+	private List<Product> prepProdcts(Long[][] prodCatId) {
+		List<Product> prods = new ArrayList<Product>();
+		for(Long[] ele : prodCatId) {
+			if(ele != null) {
+				prods.add(new Product(ele[0], null, ele[1], null));
+			}
+			else 
+				prods.add(null);
+		}
+		return prods;
+	}
+	
+	private Map<Long,List<Long>> prepActualMap(List<ProductsInCategory> prodsInCat) {
+		Map<Long,List<Long>> catToProdIdMap = new HashMap<Long,List<Long>>();
+		for(ProductsInCategory ele : prodsInCat) {
+			Category cat = ele.getCategory();
+			List<Product> prods = ele.getProds();
+			List<Long> prodIds = new ArrayList<Long>();
+			for(Product prod : prods) {
+				prodIds.add(prod.getProductId());
+			}
+			catToProdIdMap.put(cat.getCategoryId(), prodIds);
+		}
+		return catToProdIdMap;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Map<Long,List<Long>> prepExpectedMap(Object[][] catToProdIdExp) {
+		Map<Long,List<Long>> catToProdIdMap = new HashMap<Long,List<Long>>();
+		for(Object[] ele : catToProdIdExp) {
+			catToProdIdMap.put((Long)ele[0], (List<Long>)ele[1]);
+		}
+		return catToProdIdMap;
 	}
 }

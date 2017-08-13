@@ -16,6 +16,7 @@ import org.vckadam.api.onlineshopping.dao.user.UserDaoImpl;
 import org.vckadam.api.onlineshopping.dao.userhistory.UserHistoryDao;
 import org.vckadam.api.onlineshopping.dao.userhistory.UserHistoryDaoImpl;
 import org.vckadam.api.onlineshopping.model.category.Category;
+import org.vckadam.api.onlineshopping.model.category.ProductsInCategory;
 import org.vckadam.api.onlineshopping.model.product.Product;
 import org.vckadam.api.onlineshopping.model.product.ProductPurchasedByUser;
 import org.vckadam.api.onlineshopping.model.product.SuggestedProducts;
@@ -165,7 +166,52 @@ public class ProductServiceImpl implements ProductService {
 		}
 	}
 	public List<SuggestedProducts> getSuggestProducts() {
+		List<Product> prods = this.productDao.getAllProducts();
+		List<TopUserCategories> cats = getTopUserCategories();
+		return getSuggestProducts(prods, cats);
+	}
+	
+	public List<SuggestedProducts> getSuggestProducts(List<Product> prods, List<TopUserCategories> cats) {
+		/*
+		 * 
+		 */
 		return null;
 	}
 	
+	public List<ProductsInCategory> getProductsInCategory() {
+		List<Product> prods = this.productDao.getAllProducts();
+		List<Category> cats = this.categoryDao.getAllCategory();
+		return getProductsInCategory(prods, cats);
+	}
+	
+	public List<ProductsInCategory> getProductsInCategory(List<Product> prods, List<Category> cats) {
+		if(prods == null || cats == null)
+			throw new IllegalArgumentException("Illegal Argument");
+		List<ProductsInCategory> prodInCatList = new ArrayList<ProductsInCategory>();
+		Map<Long,List<Product>> catToProds = new HashMap<Long,List<Product>>();
+		Map<Long,Category> catMap = new HashMap<Long,Category>();
+		Set<Long> prodIds = new HashSet<Long>();
+		for(Category cat : cats) {
+			if(cat != null) {
+				putEntryInMap(catMap,cat.getCategoryId(),cat);
+			}
+		}
+		for(Product prod : prods) {
+			if(prod != null && !prodIds.contains(prod.getProductId())) {
+				prodIds.add(prod.getProductId());
+				Long catId;
+				if(!catToProds.containsKey((catId = prod.getCategoryId())))
+					catToProds.put(catId, new ArrayList<Product>());
+				catToProds.get(catId).add(prod);
+			}
+		}
+		for(Long catId : catToProds.keySet()) {
+			Category currCat = catMap.get(catId);
+			if(currCat != null) {
+				List<Product> currProds = catToProds.get(catId);
+				prodInCatList.add(new ProductsInCategory(currCat,currProds));
+			}
+		}
+		return prodInCatList;
+	}
 }

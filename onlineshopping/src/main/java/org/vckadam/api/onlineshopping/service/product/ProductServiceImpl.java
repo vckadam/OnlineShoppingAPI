@@ -20,6 +20,7 @@ import org.vckadam.api.onlineshopping.model.category.ProductsInCategory;
 import org.vckadam.api.onlineshopping.model.product.Product;
 import org.vckadam.api.onlineshopping.model.product.ProductPurchasedByUser;
 import org.vckadam.api.onlineshopping.model.product.SuggestedProducts;
+import org.vckadam.api.onlineshopping.model.product.TopProductsInCategory;
 import org.vckadam.api.onlineshopping.model.user.TopUserCategories;
 import org.vckadam.api.onlineshopping.model.user.User;
 import org.vckadam.api.onlineshopping.model.user.UserHistory;
@@ -182,6 +183,16 @@ public class ProductServiceImpl implements ProductService {
 		List<Product> prods = this.productDao.getAllProducts();
 		List<Category> cats = this.categoryDao.getAllCategory();
 		return getProductsInCategory(prods, cats);
+	}
+	
+	public List<TopProductsInCategory> getTopProductsInCategory() {
+		List<ProductsInCategory> productsInCategory = this.getProductsInCategory();
+		List<UserHistory> userHistory = this.userHistoryDao.getAllUserHistory();
+		return this.getTopProductsInCategory(productsInCategory,userHistory);
+	}
+	
+	public List<TopProductsInCategory> getTopProductsInCategory(List<ProductsInCategory> productsInCategory, List<UserHistory> userHistory) {
+		
 	}
 	
 	public List<ProductsInCategory> getProductsInCategory(List<Product> prods, List<Category> cats) {

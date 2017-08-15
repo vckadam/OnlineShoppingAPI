@@ -481,4 +481,97 @@ public class ProductServiceImplTest extends TestCase {
 		}
 		return catToProdIdMap;
 	}
+	
+	/***********************************************************************/
+	
+	@Test
+	public void testGetTopProducts_BasicScenario() {
+		Long[] prodIds = {1L,2L,3L};
+		List<Product> prods = prepProdListForGetPurchasedProducts(prodIds);
+		Object[][] prodCount = {{1L,1},{2L,2},{3L,3}};
+		Map<Long,Integer> countMap = prepCountMap(prodCount);
+		List<Product> topProds = this.productServiceImpl.getTopProducts(countMap, prods, 3);
+		List<Long> actualTopProdIds = prepActualProdIdList(topProds);
+		
+		List<Long> expectedTopProdIds = Arrays.asList(3L,2L,1L);
+		
+		assertEquals(expectedTopProdIds, actualTopProdIds);
+
+	}
+	
+	@Test
+	public void testGetTopProducts_MoreThanOneWithSameCount() {
+		Long[] prodIds = {1L,2L,3L,4L};
+		List<Product> prods = prepProdListForGetPurchasedProducts(prodIds);
+		Object[][] prodCount = {{1L,1},{2L,2},{3L,3},{4L,2}};
+		Map<Long,Integer> countMap = prepCountMap(prodCount);
+		List<Product> topProds = this.productServiceImpl.getTopProducts(countMap, prods, 3);
+		List<Long> actualTopProdIds = prepActualProdIdList(topProds);
+		
+		List<Long> expectedTopProdIds = Arrays.asList(3L,2L,4L,1L);
+		
+		assertEquals(expectedTopProdIds, actualTopProdIds);
+
+	}
+	
+	@Test
+	public void testGetTopProducts_SameCountForAll() {
+		Long[] prodIds = {1L,2L,3L,4L};
+		List<Product> prods = prepProdListForGetPurchasedProducts(prodIds);
+		Object[][] prodCount = {{1L,1},{2L,1},{3L,1},{4L,1}};
+		Map<Long,Integer> countMap = prepCountMap(prodCount);
+		List<Product> topProds = this.productServiceImpl.getTopProducts(countMap, prods, 1);
+		List<Long> actualTopProdIds = prepActualProdIdList(topProds);
+		
+		List<Long> expectedTopProdIds = Arrays.asList(1L,2L,3L,4L);
+		
+		assertEquals(expectedTopProdIds, actualTopProdIds);
+
+	}
+	
+	@Test
+	public void testGetTopProducts_ProductWithZeroCount() {
+		Long[] prodIds = {1L,2L,3L,4L,5L};
+		List<Product> prods = prepProdListForGetPurchasedProducts(prodIds);
+		Object[][] prodCount = {{1L,1},{2L,1},{3L,1},{4L,1}};
+		Map<Long,Integer> countMap = prepCountMap(prodCount);
+		List<Product> topProds = this.productServiceImpl.getTopProducts(countMap, prods, 1);
+		List<Long> actualTopProdIds = prepActualProdIdList(topProds);
+		
+		List<Long> expectedTopProdIds = Arrays.asList(1L,2L,3L,4L);
+		
+		assertEquals(expectedTopProdIds, actualTopProdIds);
+
+	}
+	
+	@Test
+	public void testGetTopProducts_InvalidProductWithCount() {
+		Long[] prodIds = {1L,2L,3L,4L};
+		List<Product> prods = prepProdListForGetPurchasedProducts(prodIds);
+		Object[][] prodCount = {{1L,1},{2L,1},{3L,1},{4L,1},{5L,2}};
+		Map<Long,Integer> countMap = prepCountMap(prodCount);
+		List<Product> topProds = this.productServiceImpl.getTopProducts(countMap, prods, 2);
+		List<Long> actualTopProdIds = prepActualProdIdList(topProds);
+		
+		List<Long> expectedTopProdIds = Arrays.asList(1L,2L,3L,4L);
+		
+		assertEquals(expectedTopProdIds, actualTopProdIds);
+
+	}
+	
+	private Map<Long,Integer> prepCountMap(Object[][] prodCount) {
+		Map<Long,Integer> countMap = new HashMap<Long,Integer>();
+		for(Object[] ele : prodCount) {
+			countMap.put((Long)ele[0],(Integer)ele[1]);
+		}
+		return countMap;
+	}
+	
+	private List<Long> prepActualProdIdList(List<Product> topProds) {
+		List<Long> prodIds = new ArrayList<Long>();
+		for(Product prod : topProds) {
+			prodIds.add(prod.getProductId());
+		}
+		return prodIds;
+	}
 }

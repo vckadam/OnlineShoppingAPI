@@ -192,7 +192,48 @@ public class ProductServiceImpl implements ProductService {
 	}
 	
 	public List<TopProductsInCategory> getTopProductsInCategory(List<ProductsInCategory> productsInCategory, List<UserHistory> userHistory) {
-		
+		if(productsInCategory == null || userHistory == null)
+			throw new IllegalArgumentException("Illegal Argument");
+		Map<Long,Integer> productCount  = new HashMap<Long,Integer>();
+		List<TopProductsInCategory> topProdCatList = new ArrayList<TopProductsInCategory>();
+		int max = 0;
+		for(UserHistory ele : userHistory) {
+			if(ele != null) {
+				Long key;
+				productCount.put((key = ele.getProductId()),(max = productCount.getOrDefault(key, 0)+1));
+			}
+		}
+		for(ProductsInCategory ele : productsInCategory) {
+			if(ele != null) {
+				Category currCat = ele.getCategory();
+				List<Product> currProds = ele.getProds();
+				if(currCat != null && currProds != null) {
+					List<Product> topProds = getTopProducts(productCount, currProds, max);
+					topProdCatList.add(new TopProductsInCategory(currCat,topProds));
+				}
+			}
+		}
+		return topProdCatList;
+	}
+	
+	public List<Product> getTopProducts(Map<Long,Integer> productCount, List<Product> currProds, int max) {
+		@SuppressWarnings("unchecked")
+		List<Product>[] products = new List[max+1];
+		List<Product> topProducts = new ArrayList<Product>();
+		for(Product prod : currProds) {
+			if(prod != null) {
+				Integer curCount = productCount.get(prod.getProductId());
+				if(curCount != null) {
+					if(products[curCount] == null)
+						products[curCount] = new ArrayList<Product>();
+					products[curCount].add(prod);
+				}
+			}
+		}
+		for(int i = max; i >= 0; i--)
+			if(products[i] != null)
+				topProducts.addAll(products[i]);
+		return topProducts;
 	}
 	
 	public List<ProductsInCategory> getProductsInCategory(List<Product> prods, List<Category> cats) {

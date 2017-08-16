@@ -32,6 +32,8 @@ public class ProductServiceImpl implements ProductService {
 	private UserDao userDao;
 	private CategoryDao categoryDao;
 	
+	private static final int TOPCATCOUNT = 5, TOPPRODCOUNT = 5;
+	
 	public ProductServiceImpl() {
 		this.productDao = new ProductDaoImpl();
 		this.userHistoryDao = new UserHistoryDaoImpl();
@@ -167,16 +169,39 @@ public class ProductServiceImpl implements ProductService {
 		}
 	}
 	public List<SuggestedProducts> getSuggestProducts() {
-		List<Product> prods = this.productDao.getAllProducts();
-		List<TopUserCategories> cats = getTopUserCategories();
-		return getSuggestProducts(prods, cats);
+		List<TopProductsInCategory> topProdsInCat = getTopProductsInCategory();
+		List<TopUserCategories> topUserCats = getTopUserCategories();
+		return getSuggestProducts(topProdsInCat, topUserCats);
 	}
 	
-	public List<SuggestedProducts> getSuggestProducts(List<Product> prods, List<TopUserCategories> cats) {
-		/*
-		 * 
-		 */
-		return null;
+	public List<SuggestedProducts> getSuggestProducts(List<TopProductsInCategory> topProdsInCat, List<TopUserCategories> topUserCats) {
+		if(topProdsInCat == null || topUserCats == null)
+			throw new IllegalArgumentException("Illegal Argument Exception");
+		Map<Long,List<Product>> catIdToProds = new HashMap<Long,List<Product>>();
+		List<SuggestedProducts> suggProdList = new ArrayList<SuggestedProducts>();
+		for(TopProductsInCategory ele : topProdsInCat) {
+			if(ele != null) {
+				Category cat = ele.getCategory();
+				List<Product> prods = ele.getProducts();
+				if(cat != null && prods != null) {
+					catIdToProds.put(cat.getCategoryId(), prods);
+				}
+			}
+		}
+		for(TopUserCategories ele : topUserCats) {
+			if(ele != null) {
+				User user = ele.getUser();
+				List<Category> cats = ele.getCategories();
+				if(user != null && cats != null) {
+					List<Product> prods = new ArrayList<Product>();
+					for(int i = 0; i < Math.min(TOPCATCOUNT, cats.size()); i++) {
+						prods.add(getProducts(cats.get(i).getCategoryId(),catIdToProds));
+					}
+					suggProdList.add(new SuggestedProducts(user,prods));
+				}
+			}
+		}
+		return suggProdList;
 	}
 	
 	public List<ProductsInCategory> getProductsInCategory() {

@@ -11,6 +11,7 @@ import org.vckadam.api.onlineshopping.model.category.Category;
 import org.vckadam.api.onlineshopping.model.category.ProductsInCategory;
 import org.vckadam.api.onlineshopping.model.product.Product;
 import org.vckadam.api.onlineshopping.model.product.ProductPurchasedByUser;
+import org.vckadam.api.onlineshopping.model.product.SuggestedProducts;
 import org.vckadam.api.onlineshopping.model.product.TopProductsInCategory;
 import org.vckadam.api.onlineshopping.model.user.TopUserCategories;
 import org.vckadam.api.onlineshopping.model.user.User;
@@ -778,5 +779,235 @@ public class ProductServiceImplTest extends TestCase {
 				prodsInCatList.add(null);
 		}
 		return prodsInCatList;
+	}
+	
+	/********************************************************************/
+	
+	@Test
+	public void testGetSuggestProducts_BasicScenario() {
+		Object[][] catIdProdsIds = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}, {3L,Arrays.asList(6L,7L)}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {{1L,Arrays.asList(1L,3L)},{2L,Arrays.asList(2L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{1L,Arrays.asList(1L,2L,3L,6L,7L)},{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	@Test
+	public void testGetSuggestProducts_ExtraTopProdsInCat() {
+		Object[][] catIdProdsIds = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}, {3L,Arrays.asList(6L,7L)},{4L,Arrays.asList(8L,9L)}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {{1L,Arrays.asList(1L,3L)},{2L,Arrays.asList(2L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{1L,Arrays.asList(1L,2L,3L,6L,7L)},{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	@Test
+	public void testGetSuggestProducts_ExtraTopUserCategory() {
+		Object[][] catIdProdsIds = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}, {3L,Arrays.asList(6L,7L)},{4L,Arrays.asList(8L,9L)}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {{1L,Arrays.asList(1L,3L)},{2L,Arrays.asList(2L)},{3L,Arrays.asList(10L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{1L,Arrays.asList(1L,2L,3L,6L,7L)},{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	@Test
+	public void testGetSuggestProducts_NullProdsInCategory() {
+		Object[][] catIdProdsIds = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}, {3L,null}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {{1L,Arrays.asList(1L,3L)},{2L,Arrays.asList(2L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	@Test
+	public void testGetSuggestProducts_NullCategoryInTopProdsInCat() {
+		Object[][] catIdProdsIds = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}, {null,Arrays.asList(6L,7L)}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {{1L,Arrays.asList(1L,3L)},{2L,Arrays.asList(2L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	@Test
+	public void testGetSuggestProducts_NullCategoriesInTopUserCats() {
+		Object[][] catIdProdsIds = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}, {null,Arrays.asList(6L,7L)}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {{1L,null},{2L,Arrays.asList(2L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	@Test
+	public void testGetSuggestProducts_NullUserInTopUserCats() {
+		Object[][] catIdProdsIds = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}, {null,Arrays.asList(6L,7L)}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {{null,Arrays.asList(1L,3L)},{2L,Arrays.asList(2L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	@Test
+	public void testGetSuggestProducts_NullTopProdsInCat() {
+		Object[][] catIdProdsIds = {null,{2L,Arrays.asList(4L,5L)}, {3L,Arrays.asList(6L,7L)}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {{1L,Arrays.asList(1L,3L)},{2L,Arrays.asList(2L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{1L,Arrays.asList(6L,7L)},{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	@Test
+	public void testGetSuggestProducts_NullTopUserCats() {
+		Object[][] catIdProdsIds = {{1L,Arrays.asList(1L,2L,3L)},{2L,Arrays.asList(4L,5L)}, {3L,Arrays.asList(6L,7L)}};
+		List<TopProductsInCategory> topProdsInCat = prepTopProdsInCatList(catIdProdsIds);
+		Object[][] userIdCatsIds = {null,{2L,Arrays.asList(2L)}};
+		List<TopUserCategories> topUserCats = prepTopUserCategoryList(userIdCatsIds);
+		List<SuggestedProducts> suggestProds = this.productServiceImpl.getSuggestProducts(topProdsInCat, topUserCats);
+		Map<Long,List<Long>> userIdProdsIdsActMap = prepUserIdProdIdsActualMap(suggestProds);
+		
+		Object[][] userIdProdIdsExp = {{2L,Arrays.asList(4L,5L)}};
+		Map<Long,List<Long>> userIdProdsIdsExpMap = prepUserIdProdIdExpectedMap(userIdProdIdsExp);
+		
+		assertEquals(userIdProdIdsExp.length, suggestProds.size());
+		assertEquals(userIdProdsIdsExpMap, userIdProdsIdsActMap);
+		
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private Map<Long,List<Long>> prepUserIdProdIdExpectedMap(Object[][] userIdProdIdsExp) {
+		Map<Long,List<Long>> userIdProdsIds = new HashMap<Long,List<Long>>();
+		for(Object[] ele : userIdProdIdsExp) {
+			userIdProdsIds.put((Long)ele[0], (List<Long>)ele[1]);
+		}
+		return userIdProdsIds;
+	}
+	
+	private Map<Long,List<Long>> prepUserIdProdIdsActualMap(List<SuggestedProducts> suggestProds) {
+		Map<Long,List<Long>> userIdProdsIds = new HashMap<Long,List<Long>>();
+		for(SuggestedProducts ele : suggestProds) {
+			User user = ele.getUser();
+			List<Product> prods = ele.getProducts();
+			List<Long> prodIds = new ArrayList<Long>();
+			for(Product prod : prods) {
+				prodIds.add(prod.getProductId());
+			}
+			userIdProdsIds.put(user.getUserId(),prodIds);
+		}
+		return userIdProdsIds;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private List<TopProductsInCategory> prepTopProdsInCatList(Object[][] catIdProdsIds) {
+		List<TopProductsInCategory> topProdsInCat = new ArrayList<TopProductsInCategory>();
+		for(Object[] ele : catIdProdsIds) {
+			if(ele != null) {
+				Long catId = (Long)ele[0];
+				List<Long> prodsId = (List<Long>)ele[1];
+				Category cat = null;
+				if(catId != null)
+					cat = new Category(catId, null, null);
+				List<Product> prods = null;
+				if(prodsId != null) {
+					prods = new ArrayList<Product>();
+					for(Long prodId : prodsId) {
+						prods.add(new Product(prodId,null,null,null));
+					}
+				}
+				topProdsInCat.add(new TopProductsInCategory(cat, prods));
+			} else {
+				topProdsInCat.add(null);
+			}
+		}
+		return topProdsInCat;
+	}
+	
+	private List<TopUserCategories> prepTopUserCategoryList(Object[][] userIdCatsIds) {
+		List<TopUserCategories> topProdsInCat = new ArrayList<TopUserCategories>();
+		for(Object[] ele : userIdCatsIds) {
+			if(ele != null) {
+				Long userId = (Long)ele[0];
+				User user = null;
+				if(userId != null) {
+					user = new User(userId, null, null, null, null);
+				}
+				@SuppressWarnings("unchecked")
+				List<Long> catIds = (List<Long>)ele[1];
+				List<Category> cats = null;
+				if(catIds != null) {
+					cats = new ArrayList<Category>();
+					for(Long catId : catIds) {
+						cats.add(new Category(catId, null, null));
+					}
+				}
+				topProdsInCat.add(new TopUserCategories(user,cats));
+			} else {
+				topProdsInCat.add(null);
+			}
+		}
+		return topProdsInCat;
 	}
 }

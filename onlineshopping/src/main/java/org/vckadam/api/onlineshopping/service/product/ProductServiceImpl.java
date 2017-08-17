@@ -194,14 +194,24 @@ public class ProductServiceImpl implements ProductService {
 				List<Category> cats = ele.getCategories();
 				if(user != null && cats != null) {
 					List<Product> prods = new ArrayList<Product>();
-					for(int i = 0; i < Math.min(TOPCATCOUNT, cats.size()); i++) {
-						prods.add(getProducts(cats.get(i).getCategoryId(),catIdToProds));
+					for(int i = 0; i <= Math.min(TOPCATCOUNT, cats.size()-1); i++) {
+						prods.addAll(getProducts(cats.get(i).getCategoryId(),catIdToProds));
 					}
-					suggProdList.add(new SuggestedProducts(user,prods));
+					if(prods.size() > 0) 
+						suggProdList.add(new SuggestedProducts(user,prods));
 				}
 			}
 		}
 		return suggProdList;
+	}
+	
+	public List<Product> getProducts(Long catId, Map<Long,List<Product>> catIdToProds) {
+		List<Product> prods = catIdToProds.get(catId);
+		if(prods == null)
+			return new ArrayList<Product>();
+		if(prods.size() <= TOPPRODCOUNT) 
+			return prods;
+		return prods.subList(0, TOPPRODCOUNT);
 	}
 	
 	public List<ProductsInCategory> getProductsInCategory() {
